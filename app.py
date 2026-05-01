@@ -162,27 +162,32 @@ st.markdown("""
 # PASTE YOUR API KEY INSIDE THE QUOTES BELOW
 # ==========================================
 # NEW WAY (Safe for Gear Up Productions)
-# --- AI SETUP ---
-# --- AI SETUP ---
-# --- AI SETUP ---
 GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+
+# Setup Google Gemini
 genai.configure(api_key=GOOGLE_API_KEY)
-os.environ["GOOGLE_API_VERSION"] = "v1" # Force stable API
+model = genai.GenerativeModel('gemini-1.5-flash-latest'),system_instruction="You are NEXA AI, a conversational companion developed by Nivin in Gear Up Productions. You are friendly, helpful, and you should always identify yourself as NEXA AI from Gear Up Productions when asked who created you. Do not say you are a large language model trained by Google unless specifically asked about your underlying architecture.if the user ask hi say hi friend only nothing else")
 
-model = genai.GenerativeModel('gemini-1.5-flash', 
-    system_instruction="You are NEXA AI, a conversational companion developed by Nivin in Gear Up Productions. If the user says hi, say 'hi friend only'.")
 
-# --- SIDEBAR ---
+
+# Page Config
+
+# --- SIDEBAR & ADMIN PANEL ---
 with st.sidebar:
     st.title("Gear Up Productions")
     st.info("NEXA AI v1.0")
+    
+    # 1. Clear Chat Button
     if st.button("Clear Chat"):
         st.session_state.messages = []
         st.rerun()
-    
-    # Move Admin Logic here so it's always accessible
+
     st.write("---")
-    admin_pw = st.text_input("Enter Admin Key", type="password")
+    
+    # 2. Admin Dashboard Access
+    # The 'key' parameter here is what prevents the Duplicate ID error!
+    admin_pw = st.text_input("Enter Admin Key", type="password", key="admin_panel_key")
+    
     if admin_pw == "Nivin@2007":
         st.write("### 👥 Registered Users")
         try:
@@ -190,42 +195,61 @@ with st.sidebar:
             st.dataframe(df_admin, use_container_width=True)
             st.metric("Total Members", len(df_admin))
         except Exception:
-            st.error("Database not found.")
+            st.error("User database not found yet.")
     elif admin_pw:
-        st.error("Access Denied")
+        st.sidebar.error("Access Denied")
 
-# --- CHAT INTERFACE ---
+# --- MAIN CHAT INTERFACE START ---
+
 st.title("🤖 NEXA AI")
 
+# Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# Display chat history
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
+# User Input
+# User Input
 if prompt := st.chat_input("Ask NEXA anything..."):
+    # 1. Show user message and save to local session history
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
+    # 2. Generate AI Response with HISTORY
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
+        message_placeholder.markdown("NEXA is thinking...")
+        
         try:
+            # 3. Format history for Gemini API
+            # Gemini expects 'user' and 'model' roles. We convert 'assistant' to 'model'.
             formatted_history = []
-            for m in st.session_state.messages[:-1]:
+            for m in st.session_state.messages[:-1]: # All messages except the current one
                 role = "model" if m["role"] == "assistant" else "user"
                 formatted_history.append({"role": role, "parts": [m["content"]]})
 
+            # 4. Start the chat session with memory
             chat_session = model.start_chat(history=formatted_history)
+            
+            # 5. Send new message
             response = chat_session.send_message(prompt)
             full_response = response.text
             
             message_placeholder.markdown(full_response)
+            
+            # 6. Save assistant response to local history
             st.session_state.messages.append({"role": "assistant", "content": full_response})
             
         except Exception as e:
-            st.error(f"Error: {e}")
+            if "429" in str(e):
+                st.error("🚀 NEXA is taking a quick breath! Please wait 60 seconds and try again.")
+            else:
+                st.error(f"Something went wrong: {e}")
         
         # Secret Key to open the database
         admin_pw = st.sidebar.text_input("Enter Admin Key", type="password")
