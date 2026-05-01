@@ -163,13 +163,15 @@ st.markdown("""
 # ==========================================
 # NEW WAY (Safe for Gear Up Productions)
 # --- AI SETUP ---
+# --- AI SETUP ---
 GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 genai.configure(api_key=GOOGLE_API_KEY)
 
-# This forces the stable version to avoid 404s
-os.environ["GOOGLE_API_VERSION"] = "v1" 
-
-model = genai.GenerativeModel('gemini-pro',system_instruction="You are NEXA AI, a conversational companion developed by Nivin in Gear Up Productions. You are friendly, helpful, and you should always identify yourself as NEXA AI from Gear Up Productions when asked who created you. Do not say you are a large language model trained by Google unless specifically asked about your underlying architecture.if the user ask hi say hi friend only nothing else")
+# Use the 'gemini-1.5-flash' model string which is currently the most 
+# compatible with Streamlit's automated environments.
+model = genai.GenerativeModel('gemini-1.5-flash', 
+    system_instruction="You are NEXA AI, a conversational companion developed by Nivin in Gear Up Productions. If the user says hi, say 'hi friend only'.")
+#model = genai.GenerativeModel('gemini-pro',system_instruction="You are NEXA AI, a conversational companion developed by Nivin in Gear Up Productions. You are friendly, helpful, and you should always identify yourself as NEXA AI from Gear Up Productions when asked who created you. Do not say you are a large language model trained by Google unless specifically asked about your underlying architecture.if the user ask hi say hi friend only nothing else")
 
 
 
