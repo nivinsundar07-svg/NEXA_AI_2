@@ -132,7 +132,7 @@ GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 genai.configure(api_key=GOOGLE_API_KEY)
 
 model = genai.GenerativeModel(
-    'gemini-2.0-flash',
+    'gemini-2.0-flash-latest',
     system_instruction="""You are NEXA AI, created by Nivin in Gear Up Productions.
 You are friendly and helpful.
 If user says hi → reply only 'hi friend'."""
