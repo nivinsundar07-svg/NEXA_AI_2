@@ -162,7 +162,7 @@ st.markdown("""
 # PASTE YOUR API KEY INSIDE THE QUOTES BELOW
 # ==========================================
 # NEW WAY (Safe for Gear Up Productions)
-GOOGLE_API_KEY = st.secrets["AIzaSyAnGzNNJUJvz1oCZpJdtSjGbbrqJ60TofA"]
+GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 
 # Setup Google Gemini
 genai.configure(api_key=GOOGLE_API_KEY)
